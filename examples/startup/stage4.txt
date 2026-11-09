@@ -1,0 +1,43 @@
+# Запускать с nested.zip
+ls
+ls -a /
+ls -l /docs
+ls -al /
+ls /docs/intro.txt
+ls -- "/my documents"
+ls /absent
+ls -z
+ls a b
+cd /docs/projects/demo
+ls .
+cd ..
+ls
+cd "/my documents"
+ls
+cd /docs/intro.txt
+cd /absent
+cd a b
+cd -- /
+cd
+tac /docs/intro.txt
+tac -- /docs/intro.txt /docs/projects/demo/notes.txt
+tac /empty
+tac /data.bin
+tac /absent.txt
+tac
+cal
+cal 2026
+cal 11 2026
+cal 13 2026
+cal 11 2026 1
+du
+du /docs/intro.txt
+du -a /docs
+du -s /
+du -h /
+du -ah /
+du -sh -- /
+du -as /
+du /absent
+du -z
+ls

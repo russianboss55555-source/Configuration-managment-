@@ -67,22 +67,17 @@ class ParserTests(unittest.TestCase):
 
 
 class ShellTests(unittest.TestCase):
-    """Проверки заглушек, ошибок и завершения работы."""
+    """Проверки команд, ошибок и завершения работы."""
 
     def setUp(self):
         """Создать оболочку для отдельного теста."""
         self.shell = Shell()
 
-    def test_stubs(self):
-        """Обе заглушки выводят название и аргументы."""
-        for command in ("ls", "cd"):
-            for argument in ("", " /docs"):
-                with self.subTest(command=command, argument=argument):
-                    result = self.shell.execute(command + argument)
-                    self.assertIn(f"Команда: {command}", result.output)
-                    expected = "['/docs']" if argument else "[]"
-                    self.assertIn(expected, result.output)
-                    self.assertFalse(result.should_exit)
+    def test_empty_vfs(self):
+        """Корень пустой VFS можно просмотреть и использовать как каталог."""
+        self.assertEqual(self.shell.execute("ls").output, "")
+        self.assertEqual(self.shell.execute("cd /").output, "")
+        self.assertEqual(self.shell.cwd, "/")
 
     def test_exit(self):
         """exit без аргументов завершает сеанс."""
@@ -90,7 +85,7 @@ class ShellTests(unittest.TestCase):
 
     def test_bad_arguments(self):
         """Ошибочные аргументы не завершают оболочку."""
-        for line in ("ls a b", "cd a b", "exit now", "ls -l"):
+        for line in ("ls a b", "cd a b", "exit now", "ls -z"):
             with self.subTest(line=line):
                 result = self.shell.execute(line)
                 self.assertTrue(result.output.startswith("Ошибка:"))
@@ -99,7 +94,7 @@ class ShellTests(unittest.TestCase):
     def test_unknown_command_and_recovery(self):
         """После неизвестной команды следующий ввод обрабатывается."""
         self.assertIn("Неизвестная", self.shell.execute("pwd").output)
-        self.assertIn("Заглушка", self.shell.execute("ls").output)
+        self.assertEqual(self.shell.execute("ls").output, "")
 
     def test_blank_input(self):
         """Пустой ввод безопасен для текущего сеанса."""

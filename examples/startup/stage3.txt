@@ -1,0 +1,14 @@
+# Этапы 1-3: успешный ввод, подстановка и обработка ошибок
+ls
+ls /
+cd
+cd /
+ls "${DEMO_PATH}"
+ls 'буквальный $DEMO_PATH'
+pwd
+cd one two
+ls -l
+ls "не закрыта
+ls ${VARIANT22_UNDEFINED_DEMO}
+exit extra
+ls
