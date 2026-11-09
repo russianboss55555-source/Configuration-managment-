@@ -42,9 +42,9 @@ class StartupTests(unittest.TestCase):
         dialogue = output.getvalue()
         self.assertIn("Неизвестная команда", dialogue)
         self.assertIn("Незакрытая кавычка", dialogue)
-        self.assertIn("shell $ ls\n", dialogue)
-        self.assertIn("shell $ exit\n", dialogue)
-        self.assertNotIn("shell $ cd /", dialogue)
+        self.assertIn("shell:/ $ ls\n", dialogue)
+        self.assertIn("shell:/ $ exit\n", dialogue)
+        self.assertNotIn("shell:/ $ cd /", dialogue)
         self.assertNotIn("# comment", dialogue)
 
     def test_missing_script(self):

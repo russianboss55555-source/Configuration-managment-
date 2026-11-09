@@ -1,12 +1,13 @@
-"""Обработка команд первого этапа независимо от интерфейса."""
+"""Сеанс оболочки и диспетчеризация команд."""
 
 from dataclasses import dataclass
 
+from src.commands import (
+    disk_usage, list_directory, one_path, parse_flags, reverse_files,
+    show_calendar,
+)
 from src.parser import parse_command
-from src.vfs import VirtualFileSystem
-
-
-MAX_PATH_ARGUMENTS = 1
+from src.vfs import Directory, VfsError, VirtualFileSystem
 
 
 @dataclass
@@ -18,38 +19,66 @@ class CommandResult:
 
 
 class Shell:
-    """Минимальная оболочка с заглушками ls/cd и командой exit."""
-
-    prompt = "shell $ "
+    """Хранит текущий каталог и направляет команду обработчику."""
 
     def __init__(self, vfs=None):
-        """Подключить загруженную VFS или создать пустую."""
+        """Подключить VFS и зарегистрировать команды."""
         self.vfs = vfs if vfs is not None else VirtualFileSystem()
+        self.cwd = "/"
+        self.commands = {
+            "ls": self.ls,
+            "cd": self.cd,
+            "tac": self.tac,
+            "cal": self.cal,
+            "du": self.du,
+            "exit": self.exit_command,
+        }
+
+    @property
+    def prompt(self):
+        """Вернуть приглашение оболочки с текущим каталогом."""
+        return f"shell:{self.cwd} $ "
 
     def execute(self, line):
-        """Обработать строку и преобразовать ошибки ввода в результат."""
+        """Разобрать строку, вызвать обработчик и показать ошибки."""
         try:
             words = parse_command(line)
             if not words:
                 return CommandResult()
             command, *arguments = words
-            if command == "exit":
-                return self.exit_command(arguments)
-            if command in ("ls", "cd"):
-                return self.stub_command(command, arguments)
-            raise ValueError(f"Неизвестная команда: {command}")
+            handler = self.commands.get(command)
+            if handler is None:
+                raise ValueError(f"Неизвестная команда: {command}")
+            return handler(arguments)
         except ValueError as error:
             return CommandResult(f"Ошибка: {error}")
 
-    def stub_command(self, command, arguments):
-        """Проверить аргументы и вывести имя команды-заглушки."""
-        if len(arguments) > MAX_PATH_ARGUMENTS:
-            raise ValueError(f"Использование: {command} [путь]")
-        if arguments and arguments[0].startswith("-"):
-            raise ValueError(f"Флаги {command} пока не поддерживаются.")
-        return CommandResult(
-            f"[Заглушка] Команда: {command}; аргументы: {arguments!r}"
-        )
+    def ls(self, arguments):
+        """Вывести содержимое каталога или сведения о файле."""
+        return CommandResult(list_directory(self.vfs, self.cwd, arguments))
+
+    def cd(self, arguments):
+        """Перейти в виртуальный каталог или в корень при пустом вводе."""
+        usage = "Использование: cd [--] [каталог]"
+        _, paths = parse_flags(arguments, "", usage)
+        path = one_path(paths, "/", usage)
+        absolute, node = self.vfs.resolve(self.cwd, path)
+        if not isinstance(node, Directory):
+            raise VfsError(f"Не каталог: {path}")
+        self.cwd = absolute
+        return CommandResult()
+
+    def tac(self, arguments):
+        """Вывести строки виртуальных текстовых файлов в обратном порядке."""
+        return CommandResult(reverse_files(self.vfs, self.cwd, arguments))
+
+    def cal(self, arguments):
+        """Вывести календарь в одном из поддерживаемых режимов."""
+        return CommandResult(show_calendar(arguments))
+
+    def du(self, arguments):
+        """Вывести объём виртуального дерева или файла."""
+        return CommandResult(disk_usage(self.vfs, self.cwd, arguments))
 
     def exit_command(self, arguments):
         """Запросить завершение, если exit вызвана без аргументов."""
