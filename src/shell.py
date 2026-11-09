@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from src.commands import (
     disk_usage, list_directory, one_path, parse_flags, reverse_files,
-    show_calendar,
+    show_calendar, touch_paths,
 )
 from src.parser import parse_command
 from src.vfs import Directory, VfsError, VirtualFileSystem
@@ -31,6 +31,7 @@ class Shell:
             "tac": self.tac,
             "cal": self.cal,
             "du": self.du,
+            "touch": self.touch,
             "exit": self.exit_command,
         }
 
@@ -79,6 +80,11 @@ class Shell:
     def du(self, arguments):
         """Вывести объём виртуального дерева или файла."""
         return CommandResult(disk_usage(self.vfs, self.cwd, arguments))
+
+    def touch(self, arguments):
+        """Изменить временные метки или создать файлы в памяти."""
+        touch_paths(self.vfs, self.cwd, arguments)
+        return CommandResult()
 
     def exit_command(self, arguments):
         """Запросить завершение, если exit вызвана без аргументов."""

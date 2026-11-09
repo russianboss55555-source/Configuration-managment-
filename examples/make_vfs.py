@@ -2,7 +2,7 @@
 
 import argparse
 from pathlib import Path
-from zipfile import ZIP_DEFLATED, ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 
 DOCUMENTS = {
@@ -28,7 +28,8 @@ def create_zip(dataset, path):
     path.parent.mkdir(parents=True, exist_ok=True)
     with ZipFile(path, "w", compression=ZIP_DEFLATED) as archive:
         for name, payload in DATASETS[dataset].items():
-            archive.writestr(name, payload)
+            info = ZipInfo(name, date_time=(2024, 1, 1, 0, 0, 0))
+            archive.writestr(info, payload, compress_type=ZIP_DEFLATED)
 
 
 def main():

@@ -5,7 +5,7 @@ import sys
 from src.config import parse_args
 from src.shell import Shell
 from src.startup import run_script
-from src.vfs import VfsError, VirtualFileSystem, load_zip
+from src.vfs import VfsError, load_zip
 
 
 def launch_gui(shell, config, vfs_name):
@@ -35,7 +35,7 @@ def main(argv=None):
     except VfsError as error:
         print(f"Ошибка загрузки VFS: {error}", file=sys.stderr)
         return 1
-    shell = Shell(vfs or VirtualFileSystem())
+    shell = Shell(vfs)
     if config.headless:
         print(config.describe())
         _, read_ok = run_script(shell, config.script_path, sys.stdout.write)

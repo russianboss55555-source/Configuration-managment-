@@ -8,6 +8,8 @@ case "$dataset" in
        exit 2 ;;
 esac
 if [ "$#" -gt 0 ]; then shift; fi
+scenario=stage3
+if [ "$dataset" = nested ]; then scenario=stage5; fi
 python3 -m examples.make_vfs "$dataset"
 DEMO_PATH=/ exec ./run.sh --vfs "examples/generated/$dataset.zip" \
-    --script examples/startup/stage3.txt "$@"
+    --script "examples/startup/$scenario.txt" "$@"

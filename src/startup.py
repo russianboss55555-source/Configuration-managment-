@@ -17,7 +17,8 @@ def read_script(path):
     try:
         return path.read_text(encoding="utf-8-sig").splitlines()
     except (OSError, UnicodeError) as error:
-        raise ValueError(f"Не удалось прочитать скрипт {path}: {error}") from error
+        message = f"Не удалось прочитать скрипт {path}: {error}"
+        raise ValueError(message) from error
 
 
 def run_script(shell, path, write):
