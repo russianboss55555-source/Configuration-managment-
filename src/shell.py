@@ -19,6 +19,8 @@ class CommandResult:
 class Shell:
     """Минимальная оболочка с заглушками ls/cd и командой exit."""
 
+    prompt = "shell $ "
+
     def execute(self, line):
         """Обработать строку и преобразовать ошибки ввода в результат."""
         try:
