@@ -72,6 +72,36 @@ class VirtualFileSystem:
         return "/" + name, stack[-1][1]
 
 
+    def touch(self, cwd, path, create=True):
+        """Обновить временные метки или создать пустой файл в VFS."""
+        parent_path, separator, name = path.rpartition("/")
+        if name in ("", ".", ".."):
+            _, node = self.resolve(cwd, path)
+            set_times(node, now())
+            return
+        parent_path = parent_path or separator or "."
+        _, node = self.resolve(cwd, parent_path)
+        parent = require_directory(node, parent_path)
+        _touch_child(parent, name, create)
+
+
+def _touch_child(parent, name, create):
+    """Обновить метки дочернего узла или создать файл."""
+    node = parent.children.get(name)
+    if node is not None:
+        set_times(node, now())
+    elif create:
+        stamp = now()
+        parent.children[name] = VirtualFile.from_bytes(b"", stamp)
+        parent.modified_at = stamp
+
+
+def set_times(node, stamp):
+    """Записать одинаковое время доступа и изменения."""
+    node.accessed_at = stamp
+    node.modified_at = stamp
+
+
 def require_directory(node, path):
     """Вернуть каталог или сообщить, какой путь указывает на файл."""
     if not isinstance(node, Directory):
@@ -125,8 +155,7 @@ def add_archive_entry(vfs, archive, info):
     stamp = datetime(*info.date_time, tzinfo=timezone.utc)
     if info.is_dir():
         node = ensure_directory(parent, name)
-        node.modified_at = stamp
-        node.accessed_at = stamp
+        set_times(node, stamp)
         return
     if name in parent.children:
         raise VfsError(f"Повторяющееся имя в ZIP: {info.filename}")
