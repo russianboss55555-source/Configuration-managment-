@@ -170,3 +170,23 @@ def _size_rows(node, path, flags):
     rows = []
     total = collect_sizes(node, path, rows, "a" in flags)
     return [(path, total)] if "s" in flags else rows
+
+
+def touch_paths(vfs, cwd, arguments):
+    """Обработать все пути touch и собрать ошибки отдельных операций."""
+    usage = "Использование: touch [-c] [--] путь [путь ...]"
+    flags, paths = parse_flags(arguments, "c", usage)
+    if not paths:
+        raise VfsError(usage)
+    errors = "\n".join(_touch_errors(vfs, cwd, paths, create="c" not in flags))
+    if errors:
+        raise VfsError(errors)
+
+
+def _touch_errors(vfs, cwd, paths, create):
+    """Выполнить touch для каждого пути и вернуть сообщения об ошибках."""
+    for path in paths:
+        try:
+            vfs.touch(cwd, path, create=create)
+        except VfsError as error:
+            yield f"{path!r}: {error}"

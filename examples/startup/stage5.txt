@@ -1,0 +1,22 @@
+# Запускать с nested.zip
+ls -l /docs/intro.txt
+touch /docs/intro.txt
+ls -l /docs/intro.txt
+tac /docs/intro.txt
+cd /docs
+touch new.txt "my note.txt"
+ls -l
+du -a .
+touch -c missing.txt
+ls missing.txt
+touch -- -note
+ls -- -note
+touch /empty/
+touch /absent/file.txt
+touch /docs/intro.txt/child.txt
+touch /missing/x second.txt
+ls second.txt
+touch
+touch -z file.txt
+exit extra
+cd /
