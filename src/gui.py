@@ -6,13 +6,10 @@ from tkinter import scrolledtext, ttk
 from src.startup import execute_line, run_script
 
 
-DEFAULT_VFS_NAME = "demo_vfs.zip"
-
-
 class TerminalWindow:
     """Окно ввода команд и просмотра истории текущего сеанса."""
 
-    def __init__(self, root, shell, config, vfs_name=DEFAULT_VFS_NAME):
+    def __init__(self, root, shell, config, vfs_name):
         """Создать окно и связать элементы с обработчиком команд."""
         self.root = root
         self.shell = shell
@@ -20,7 +17,7 @@ class TerminalWindow:
         root.geometry("850x520")
         root.minsize(580, 340)
         self.build_widgets(vfs_name)
-        self.write("Вариант 22 • Этап 2 • Python\n")
+        self.write("Вариант 22 • Этап 3 • Python\n")
         self.write("Команды: ls [путь], cd [путь], exit.\n")
         self.write("ls и cd работают как заглушки.\n\n")
         self.write(config.describe() + "\n\n")
@@ -53,7 +50,7 @@ class TerminalWindow:
             command_bar, text="Выполнить", command=self.submit,
         ).pack(side="left", padx=(8, 0))
         ttk.Label(
-            frame, text=f"VFS: {vfs_name} • загрузка появится на этапе 3",
+            frame, text=f"VFS: {vfs_name} • данные в памяти",
         ).pack(anchor="w", pady=(8, 0))
 
     def write(self, text):

@@ -26,10 +26,10 @@ def run_script(shell, path, write):
     except ValueError as error:
         write(f"Ошибка: {error}\n")
         return False, False
-    for line in lines:
-        command = line.strip()
-        if command and not command.startswith("#"):
-            result = execute_line(shell, line, write)
-            if result.should_exit:
-                return True, True
-    return False, True
+    commands = (
+        line for line in lines if line.strip()[:1] not in ("", "#")
+    )
+    should_exit = any(
+        execute_line(shell, line, write).should_exit for line in commands
+    )
+    return should_exit, True
