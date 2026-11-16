@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from src.parser import parse_command
+from src.vfs import VirtualFileSystem
 
 
 MAX_PATH_ARGUMENTS = 1
@@ -20,6 +21,10 @@ class Shell:
     """Минимальная оболочка с заглушками ls/cd и командой exit."""
 
     prompt = "shell $ "
+
+    def __init__(self, vfs=None):
+        """Подключить загруженную VFS или создать пустую."""
+        self.vfs = vfs if vfs is not None else VirtualFileSystem()
 
     def execute(self, line):
         """Обработать строку и преобразовать ошибки ввода в результат."""

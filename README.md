@@ -291,3 +291,13 @@ ZIP для передачи проекта распаковывается пер
 
 Windows: `demo\run-minimal.bat` или `demo\run-multiple.bat`.
 Добавьте `--headless` для прогона сценария в терминале.
+
+## Этап 3: VFS
+
+`--vfs` загружает ZIP в память. Без параметра создаётся пустая VFS.
+Имена в ZIP образуют дерево каталогов; содержимое файлов кодируется в Base64.
+Ошибка открытия архива выводится в терминал. Архив не распаковывается на диск.
+
+Windows: `demo\run-minimal.bat`, `demo\run-multiple.bat`, `demo\run-nested.bat`.
+Linux/macOS: `sh demo/run.sh nested` (также `minimal` и `multiple`).
+Добавьте `--headless` для прогона сценария без GUI.
