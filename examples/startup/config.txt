@@ -1,0 +1,9 @@
+# Имитация интерактивного диалога
+ls
+cd /docs
+ls "my documents"
+ls "${DEMO_PATH}"
+unknown
+cd a b
+ls "unfinished
+ls
