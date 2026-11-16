@@ -17,9 +17,8 @@ class TerminalWindow:
         root.geometry("850x520")
         root.minsize(580, 340)
         self.build_widgets(vfs_name)
-        self.write("Вариант 22 • Этап 3 • Python\n")
-        self.write("Команды: ls [путь], cd [путь], exit.\n")
-        self.write("ls и cd работают как заглушки.\n\n")
+        self.write("Вариант 22 • Этап 4 • Python\n")
+        self.write("Команды: ls, cd, tac, cal, du, exit.\n\n")
         self.write(config.describe() + "\n\n")
         self.entry.focus_set()
         if config.script_path is not None:
@@ -30,6 +29,8 @@ class TerminalWindow:
         should_exit, _ = run_script(self.shell, path, self.write)
         if should_exit:
             self.root.destroy()
+        else:
+            self.update_prompt()
 
     def build_widgets(self, vfs_name):
         """Разместить историю, строку ввода и подпись текущего этапа."""
@@ -42,7 +43,8 @@ class TerminalWindow:
         self.history.pack(fill="both", expand=True)
         command_bar = ttk.Frame(frame, padding=(0, 10, 0, 0))
         command_bar.pack(fill="x")
-        ttk.Label(command_bar, text="shell $ ").pack(side="left")
+        self.prompt = ttk.Label(command_bar, text=self.shell.prompt)
+        self.prompt.pack(side="left")
         self.entry = ttk.Entry(command_bar, font=("Consolas", 11))
         self.entry.pack(side="left", fill="x", expand=True)
         self.entry.bind("<Return>", self.submit)
@@ -52,6 +54,10 @@ class TerminalWindow:
         ttk.Label(
             frame, text=f"VFS: {vfs_name} • данные в памяти",
         ).pack(anchor="w", pady=(8, 0))
+
+    def update_prompt(self):
+        """Показать актуальный путь в строке ввода."""
+        self.prompt.configure(text=self.shell.prompt)
 
     def write(self, text):
         """Добавить текст в защищённую от редактирования историю."""
@@ -68,5 +74,6 @@ class TerminalWindow:
         if result.should_exit:
             self.root.destroy()
         else:
+            self.update_prompt()
             self.entry.focus_set()
         return "break"
