@@ -301,3 +301,10 @@ Windows: `demo\run-minimal.bat` или `demo\run-multiple.bat`.
 Windows: `demo\run-minimal.bat`, `demo\run-multiple.bat`, `demo\run-nested.bat`.
 Linux/macOS: `sh demo/run.sh nested` (также `minimal` и `multiple`).
 Добавьте `--headless` для прогона сценария без GUI.
+
+## Этап 4: команды чтения
+
+`ls` и `cd` работают с загруженной VFS. `tac` выводит строки файлов в
+обратном порядке, `cal` показывает календарь, `du` считает исходные байты.
+Варианты аргументов и ошибки проверяются сценарием `examples/startup/stage4.txt`.
+Запуск: `sh demo/run.sh nested --script examples/startup/stage4.txt --headless`.
