@@ -6,7 +6,9 @@ def execute_line(shell, line, write):
     write(f"{shell.prompt}{line}\n")
     result = shell.execute(line)
     if result.output:
-        write(result.output + "\n")
+        write(result.output)
+        if not result.output.endswith("\n"):
+            write("\n")
     return result
 
 
