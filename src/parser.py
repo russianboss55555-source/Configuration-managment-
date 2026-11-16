@@ -1,10 +1,12 @@
 """Разбор команд и подстановка переменных окружения реальной ОС."""
 
+from itertools import groupby
 import os
 import re
 
 
-TOKEN_PATTERN = re.compile(r"\s+|'[^']*'|\"[^\"]*\"|[^\s'\"]+")
+# Последняя альтернатива сохраняет незакрытую кавычку отдельным фрагментом.
+TOKEN_PATTERN = re.compile(r"""\s+|'[^']*'|"[^"]*"|[^\s'"]+|['"]""")
 VARIABLE_PATTERN = re.compile(
     r"\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))"
 )
@@ -24,6 +26,8 @@ def expand_variables(text):
 
 def decode_fragment(fragment):
     """Снять кавычки; одинарные кавычки сохраняют текст буквально."""
+    if fragment in ("'", '"'):
+        raise ValueError("Незакрытая кавычка.")
     if fragment.startswith("'"):
         return fragment[1:-1]
     if fragment.startswith('"'):
@@ -33,22 +37,9 @@ def decode_fragment(fragment):
 
 def parse_command(line):
     """Разобрать строку на слова с кавычками и раскрытием переменных."""
-    words = []
-    fragments = []
-    position = 0
-    for match in TOKEN_PATTERN.finditer(line):
-        if match.start() != position:
-            raise ValueError("Незакрытая кавычка.")
-        position = match.end()
-        token = match.group()
-        if token.isspace():
-            if fragments:
-                words.append("".join(fragments))
-                fragments = []
-        else:
-            fragments.append(decode_fragment(token))
-    if position != len(line):
-        raise ValueError("Незакрытая кавычка.")
-    if fragments:
-        words.append("".join(fragments))
-    return words
+    tokens = TOKEN_PATTERN.findall(line)
+    return [
+        "".join(map(decode_fragment, fragments))
+        for whitespace, fragments in groupby(tokens, key=str.isspace)
+        if not whitespace
+    ]

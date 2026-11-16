@@ -1,8 +1,10 @@
 """Обработка команд первого этапа независимо от интерфейса."""
 
 from dataclasses import dataclass
+from functools import partial
 
 from src.parser import parse_command
+from src.vfs import VirtualFileSystem
 
 
 MAX_PATH_ARGUMENTS = 1
@@ -21,6 +23,15 @@ class Shell:
 
     prompt = "shell $ "
 
+    def __init__(self, vfs=None):
+        """Подключить загруженную VFS или создать пустую."""
+        self.vfs = vfs if vfs is not None else VirtualFileSystem()
+        self.commands = {
+            "ls": partial(self.stub_command, "ls"),
+            "cd": partial(self.stub_command, "cd"),
+            "exit": self.exit_command,
+        }
+
     def execute(self, line):
         """Обработать строку и преобразовать ошибки ввода в результат."""
         try:
@@ -28,11 +39,10 @@ class Shell:
             if not words:
                 return CommandResult()
             command, *arguments = words
-            if command == "exit":
-                return self.exit_command(arguments)
-            if command in ("ls", "cd"):
-                return self.stub_command(command, arguments)
-            raise ValueError(f"Неизвестная команда: {command}")
+            handler = self.commands.get(command)
+            if handler is None:
+                raise ValueError(f"Неизвестная команда: {command}")
+            return handler(arguments)
         except ValueError as error:
             return CommandResult(f"Ошибка: {error}")
 
