@@ -8,6 +8,10 @@ import stat
 from zipfile import BadZipFile, ZipFile
 
 
+ROOT_DEPTH = 1
+ZIP_MODE_SHIFT = 16
+
+
 def now():
     """Вернуть текущее время в UTC."""
     return datetime.now(timezone.utc)
@@ -76,7 +80,32 @@ class VirtualFileSystem:
         return name or "/", stack[-1][1]
 
 
-ROOT_DEPTH = 1
+    def touch(self, cwd, path, create=True):
+        """Обновить временные метки или создать пустой файл в VFS."""
+        parent_path, separator, name = path.rpartition("/")
+        if not path:
+            raise VfsError("Пустой путь.")
+        if name in ("", ".", ".."):
+            _, node = self.resolve(cwd, path)
+            set_times(node, now())
+            return
+        parent_path = (parent_path or "/") if separator else "."
+        _, parent = self.resolve(cwd, parent_path)
+        if not isinstance(parent, Directory):
+            raise VfsError(f"Не каталог: {parent_path}")
+        node = parent.children.get(name)
+        if node is not None:
+            set_times(node, now())
+        elif create:
+            stamp = now()
+            parent.children[name] = VirtualFile.from_bytes(b"", stamp)
+            parent.modified_at = stamp
+
+
+def set_times(node, stamp):
+    """Записать одинаковое время доступа и изменения."""
+    node.accessed_at = stamp
+    node.modified_at = stamp
 
 
 def archive_parts(info):
@@ -87,7 +116,7 @@ def archive_parts(info):
     parts = name.removesuffix("/").split("/")
     if any(part in ("", ".", "..") for part in parts):
         raise VfsError(f"Недопустимый путь в ZIP: {name!r}")
-    mode = stat.S_IFMT(info.external_attr >> 16)
+    mode = stat.S_IFMT(info.external_attr >> ZIP_MODE_SHIFT)
     if mode not in (0, stat.S_IFREG, stat.S_IFDIR):
         raise VfsError(f"Неподдерживаемый тип записи в ZIP: {name!r}")
     return parts
@@ -113,8 +142,7 @@ def add_archive_entry(vfs, archive, info):
     stamp = datetime(*info.date_time, tzinfo=timezone.utc)
     if info.is_dir():
         node = ensure_directory(parent, name)
-        node.modified_at = stamp
-        node.accessed_at = stamp
+        set_times(node, stamp)
         return
     if name in parent.children:
         raise VfsError(f"Повторяющееся имя в ZIP: {info.filename}")

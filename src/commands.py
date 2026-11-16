@@ -145,7 +145,8 @@ def disk_usage(vfs, cwd, arguments):
     path = one_path(paths, ".", usage)
     absolute, node = vfs.resolve(cwd, path)
     rows = []
-    collect_sizes(node, absolute, rows, "a" in flags or path_is_file(node))
+    include_files = "a" in flags or isinstance(node, VirtualFile)
+    collect_sizes(node, absolute, rows, include_files)
     if "s" in flags:
         rows = rows[-1:]
     return "\n".join(
@@ -154,6 +155,18 @@ def disk_usage(vfs, cwd, arguments):
     )
 
 
-def path_is_file(node):
-    """Вернуть признак обычного файла."""
-    return isinstance(node, VirtualFile)
+
+def touch_paths(vfs, cwd, arguments):
+    """Обработать все пути touch и собрать ошибки отдельных операций."""
+    usage = "Использование: touch [-c] [--] путь [путь ...]"
+    flags, paths = parse_flags(arguments, "c", usage)
+    if not paths:
+        raise VfsError(usage)
+    errors = []
+    for path in paths:
+        try:
+            vfs.touch(cwd, path, create="c" not in flags)
+        except VfsError as error:
+            errors.append(f"{path!r}: {error}")
+    if errors:
+        raise VfsError("\n".join(errors))

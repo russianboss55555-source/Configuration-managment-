@@ -17,8 +17,8 @@ class TerminalWindow:
         root.geometry("850x520")
         root.minsize(580, 340)
         self.build_widgets(vfs_name)
-        self.write("Вариант 22 • Этап 4 • Python\n")
-        self.write("Команды: ls, cd, tac, cal, du, exit.\n\n")
+        self.write("Вариант 22 • Этап 5 • Python\n")
+        self.write("Команды: ls, cd, tac, cal, du, touch, exit.\n\n")
         self.write(config.describe() + "\n\n")
         self.entry.focus_set()
         if config.script_path is not None:
